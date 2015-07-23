@@ -1,0 +1,221 @@
+<!DOCTYPE html>
+<meta charset="utf-8">
+<style>
+
+body {
+  font: 10px sans-serif;
+}
+
+
+.line {
+  fill: none;
+  stroke: black;
+  stroke-width: 1.5px;
+}
+
+path { 
+  stroke: steelblue;
+	stroke-width: 2;
+	fill: none;
+}
+
+.axis path,
+.axis line {
+	fill: none;
+	stroke: grey;
+	stroke-width: 1;
+	shape-rendering: crispEdges;
+}
+
+</style>
+<body>
+<script src="js/libs/d3/d3.v3.js"></script>
+<script>
+//Width and height
+var margin = {top: 20, right: 20, bottom: 30, left: 50},
+    width = 400 - margin.left - margin.right,
+    height = 220 - margin.top - margin.bottom;
+var xAxis = d3.svg.axis().scale(x)
+	.orient("bottom").ticks(5);
+
+var yAxis = d3.svg.axis().scale(y)
+	.orient("left").ticks(5);
+
+var dataset = [10,10,10,10,10,10,10,10,10,10,10,10];
+var Power= [15672,15121,14235,13223,11530,9662,11023,12849,10270,12951,15732,15235] 
+
+var x = d3.scale.linear().domain([0,14]).range([0, width]);
+
+var y = d3.scale.linear().range([height, 0]);
+var line = d3.svg.line()
+    .x(function(d) { return d.date; })
+    .y(function(d) { return d.close; })
+    .interpolate("linear");
+var line = d3.svg.line()
+    .x(function(d) { return d.date; })
+    .y(function(d) { return d.close; })
+    .interpolate("linear");  
+var arc = d3.svg.arc()
+    .innerRadius(40)
+    .outerRadius(140);
+var startAngle;
+var endAngle;
+var pie = d3.layout.pie();
+
+//Easy colors accessible via a 10-step ordinal scale
+var color = d3.scale.category10();
+
+//Create SVG element
+var svg = d3.select("body").append("svg")
+    .attr("width", width + margin.left + margin.right)
+    .attr("height", height + margin.top + margin.bottom)
+    .append("g")
+    .attr("transform", "translate(" + 200 + "," + 110 + ")");
+    var arcsLayer = svg.append('g').attr('id', 'frederick-d-orcslayer');
+d3.csv("data2.csv", function(error, data) {
+  data.forEach(function(d) {
+    // console.log(d["date"]);
+     d.date = d.date;
+     d.close = d.close;
+  });
+
+  x.domain(d3.extent(data, function(d) { return d.date; }));
+  y.domain(d3.extent(data, function(d) { return d.close; }));
+
+
+
+  svg.append("path")
+      .datum(data)
+      .attr("class", "line")
+      .attr("d", line(data));
+      
+});
+
+//Set up groups
+var arcs = svg.selectAll("g.arc")
+    .data(pie(dataset))
+    .enter()
+    .append("g")
+    .attr("class", "arc");
+
+//Draw arc paths
+arcs.append("path")
+    .attr("fill","red")
+    .attr("d", arc).style('stroke', 'white')
+    .style('stroke-width', 1)
+    .attr("fill", function(d, i) { return "url(#grad" + i + ")"; });
+    
+var grads = svg.append("defs").selectAll("radialGradient").data(pie(dataset))
+    .enter().append("radialGradient")
+    .attr("gradientUnits", "userSpaceOnUse")
+    .attr("cx", 0)
+    .attr("cy", 0)
+    .attr("r", "100%")
+    .attr("id", function(d, i) { return "grad" + i; });
+grads.append("stop").attr("offset", "2%").style("stop-color", "#F8E0E0");
+grads.append("stop").attr("offset", "15%").style("stop-color","#FA5858");
+
+
+    
+ var arcpath= d3.svg.arc()
+                .innerRadius(40)
+                .outerRadius(140)
+                .startAngle(0)
+                .endAngle(0);
+    
+   var arcSelection=svg.append("path")
+    .attr("fill","#9AFE2E")
+    .attr("d", arcpath)
+    .attr("opacity",.8);
+    
+var Month= d3.svg.arc()
+                .innerRadius(150)
+                .outerRadius(240)
+                .startAngle(0)
+                .endAngle(0);
+    
+   var arcMonth=svg.append("path")
+    .attr("d", Month)
+    .attr("fill","blue")
+    .style('stroke', 'white')
+    .style('stroke-width', 1)
+    .attr("fill", function(d, i) { return "url(#grad" + i + ")"; });
+    
+    var isMouseDown = false;
+    
+    arcs.on("mousedown", function(d){ 
+        var div= d3.select(this).classed("active",true) ; 
+        currentSelected = this;
+        console.log(d3.mouse(arcs.node()));
+        d3.select(window)
+        .on('mousemove', mouseMove)
+        .on('mouseup', mouseUp);
+        var point = d3.mouse(arcs.node());
+         startAngle= (Math.atan2(point[1], point[0]) + Math.PI / 2);       
+         console.log(startAngle);
+         
+              });
+              
+             
+          
+              
+  var mouseUp = function () {
+      console.log('mouseup');
+      d3.select(window)
+        .on('mousemove', null)
+        .on('mouseup', null);
+      currentSelected = null;
+    };
+   var mouseMove = function () {
+      console.log('mouseup');
+      
+      currentSelected = null;
+      var point = d3.mouse(arcs.node());
+         endAngle= (Math.atan2(point[1], point[0]) + Math.PI / 2);       
+        console.log("endAngle") ;
+        console.log(endAngle);
+         refresh();
+    }; 
+    var refresh = function () {
+        console.log("in refresh");
+         var arcS= d3.svg.arc()
+                .innerRadius(40)
+                .outerRadius(140)
+                .startAngle(startAngle)
+                .endAngle(endAngle);
+           arcSelection.attr("d",arcS);    
+           var arcM= d3.svg.arc()
+                .innerRadius(150)
+                .outerRadius(240)
+                .startAngle(startAngle)
+                .endAngle(endAngle);
+        arcMonth.attr("d",arcM)
+    }
+ 
+ var svg2 = d3.select("body").append("svg")
+    .attr("width", width + margin.left + margin.right)
+    .attr("height", height + margin.top + margin.bottom)
+    .append("g")
+    .attr("transform", "translate(" + margin.left + "," + margin.top + ")"); 
+d3.csv("data5.csv", function(error, data) {
+  data.forEach(function(d) {
+    // console.log(d["date"]);
+     d.date = d.date;
+     d.close = d.close;
+  });
+
+  x.domain(d3.extent(data, function(d) { return d.date; }));
+  y.domain(d3.extent(data, function(d) { return d.close; }));
+
+
+  svg2.append("path")
+      .datum(data)
+      .attr("class", "line")
+      .attr("d", line(data));
+
+	// Add the X Axis
+	
+      
+});
+
+</script>

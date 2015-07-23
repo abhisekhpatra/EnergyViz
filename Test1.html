@@ -1,0 +1,64 @@
+<!DOCTYPE html>
+<meta charset="utf-8">
+<style>
+
+body {
+  font: 10px sans-serif;
+}
+
+.line {
+  fill: black;
+  stroke: black;
+  stroke-width: 4px;
+}
+
+.area {
+  fill: black;
+  stroke: black;
+  stroke-width: 1.5px;
+}
+.solidArc:hover {
+  fill: orangered ;
+}
+
+.solidArc {
+    -moz-transition: all 0.3s;
+    -o-transition: all 0.3s;
+    -webkit-transition: all 0.3s;
+    transition: all 0.3s;
+}
+</style>
+<body>
+<script src="js/libs/d3/d3.v3.js"></script>
+<script>
+var radius = 300,
+    padding = 5,
+    scale = 5,
+    n = radius * radius / (scale * scale),
+    α = Math.PI * (3 - Math.sqrt(5));
+
+var colour = d3.scale.linear()
+    .domain([0, n / 2, n])
+    .range(["#fff", "#f90", "#000"]);
+
+d3.select("#vis").append("svg")
+    .attr("width", 3 * (radius + padding))
+    .attr("height", 2 * (radius + padding))
+  .append("g")
+    .attr("transform", "translate(" + (radius + padding) + "," + (radius + padding) + ")")
+  .selectAll("circle")
+    .data(d3.range(1, n).map(place))
+  .enter().append("circle")
+    .style("fill", function(d, i) { return colour(i); })
+    .attr("cx", function(d) { return d[0]; })
+    .attr("cy", function(d) { return d[1]; })
+    .attr("r", 2.5);
+
+function place(n) {
+  var r = Math.sqrt(n),
+      a = n * α;
+  return [scale * r * Math.cos(a), scale * r * Math.sin(a)];
+}
+   
+  
+</script>

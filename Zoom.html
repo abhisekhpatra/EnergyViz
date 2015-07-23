@@ -1,0 +1,96 @@
+<!DOCTYPE html>
+<meta charset="utf-8">
+<body>
+<script src="js/libs/d3/d3.v3.js"></script>
+<style>
+
+
+
+.axis path,
+.axis line {
+  fill: none;
+  stroke: #000;
+  shape-rendering: crispEdges;
+}
+
+.x.axis path {
+  display: none;
+}
+
+.line {
+  fill: none;
+  stroke: steelblue;
+  stroke-width: 1.5px;
+}
+</style>
+
+<script>
+var arrData = [
+    ["2012-10-02",200],
+    ["2012-10-09", 300], 
+    ["2012-10-12", 150]];
+     
+var margin = {top: 20, right: 20, bottom: 30, left: 50},
+    width = 400 - margin.left - margin.right,
+    height = 100 - margin.top - margin.bottom;
+
+var parseDate = d3.time.format("%Y-%m-%d").parse;
+
+
+var x = d3.time.scale()
+    .range([0, width])
+
+var y = d3.scale.linear()
+    .range([height, 0]);
+
+
+var line = d3.svg.line()
+    .x(function(d) { return x(d.date); })
+    .y(function(d) { return y(d.close); });
+
+var svg1 = d3.select("body").append("svg")
+    .attr("width", width + margin.left + margin.right)
+    .attr("height", height + margin.top + margin.bottom)
+    .attr("transform", "translate(" + 200 + "," +300 + ")")
+  .append("g")
+    .attr("transform", "translate(" + margin.left + "," + margin.top + ")");
+    
+var svg2 = d3.select("body").append("svg")
+    .attr("width", width + margin.left + margin.right)
+    .attr("height", height + margin.top + margin.bottom)
+    .attr("transform", "translate(" + 200 + "," +300 + ")")
+  .append("g")
+    .attr("transform", "translate(" + margin.left + "," + margin.top + ")");
+
+  var data = arrData.map(function(d) {
+      return {
+         date: parseDate(d[0]),
+         close: d[1]
+      };
+      
+  });
+
+  console.log(data);
+
+
+  x.domain(d3.extent(data, function(d) { return d.date; }));
+  y.domain(d3.extent(data, function(d) { return d.close; }));
+
+   
+
+  d3.csv("Weekly.csv", function(error, data) {
+   
+  
+ svg1.append("g").append("path")
+      .datum(data)
+      .attr("d", area(data))
+      .style('stroke', 'black')
+      .style('stroke-width', 1)
+      .attr("fill","black");
+ svg2.append("path")
+      .datum(data)
+      .attr("class", "line")
+      .attr("d", line);
+
+
+</script>

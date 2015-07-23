@@ -1,0 +1,515 @@
+
+<!DOCTYPE html>
+<meta charset="utf-8">
+<style> /* set the CSS */
+
+body {
+  font: 10px sans-serif;
+}
+
+.line {
+  fill: none;
+  stroke: steelblue;
+  stroke-width: 2;
+  shape-rendering: crispEdges;
+}
+
+.area {
+  fill: black;
+  stroke: black;
+  stroke-width: 2px;
+}
+.solidArc:hover {
+  fill: orangered ;
+}
+
+.solidArc {
+    -moz-transition: all 0.3s;
+    -o-transition: all 0.3s;
+    -webkit-transition: all 0.3s;
+    transition: all 0.3s;
+}
+
+.axis path,
+.axis line {
+	fill: none;
+	stroke: grey;
+	stroke-width: 1;
+	shape-rendering: crispEdges;
+}
+
+
+</style>
+
+<body>
+
+<!-- load the d3.js library -->	
+<script src="js/libs/d3/d3.v3.js"></script>
+
+<script>
+
+// Set the dimensions of the canvas / graph
+var	margin = {top: 30, right: 20, bottom: 30, left: 50},
+	width1 = 800 - margin.left - margin.right,
+	height1 = 620 - margin.top - margin.bottom;
+var	margin = {top: 0, right: 20, bottom: 40, left: 50},
+	width = 400 - margin.left - margin.right,
+	height =300 - margin.top - margin.bottom;
+
+// Parse the date / time
+    radius = Math.min(790, 350) / 2;
+var dataArray;
+var hourlyArray;
+var data = [{
+    label: 'Jan',
+    instances: 10
+}, {
+    label: 'Feb',
+    instances: 10
+}, {
+    label: 'Mar',
+    instances: 10
+}, {
+    label: 'Apr',
+    instances: 10
+}, {
+    label: 'May',
+    instances: 10
+}, {
+    label: 'Jun',
+    instances: 10
+}, {
+    label: 'Jul',
+    instances: 10
+}, {
+    label: 'Aug',
+    instances: 10
+}, {
+    label: 'Sep',
+    instances: 10
+}, {
+    label: 'Oct',
+    instances: 10
+}, {
+    label: 'Nov',
+    instances: 10
+}, {
+    label: 'Dec',
+    instances: 10
+}];
+
+var key = function(d){ return d.data.label; };
+
+var pie = d3.layout.pie()
+    .sort(null)
+    .value(function(d) { return d.width; });
+    
+var pieOuter = d3.layout.pie()
+    .sort(null)
+    .value(function(d) { return d.instances; });
+
+var area = d3.svg.area.radial()
+    .interpolate("linear")
+    .angle(function(d) { return d.angle; })
+    .innerRadius(function(d) { return 20; })
+    .outerRadius(function(d) { return d.length; });
+    
+var area1 = d3.svg.area.radial()
+    .interpolate("linear")
+    .angle(function(d) { return d.angle; })
+    .innerRadius(function(d) { return 200; })
+    .outerRadius(function(d) { return d.length; });
+
+
+
+// Set the ranges
+var	x1 = d3.scale.linear().domain([0,24]).range([0, width]);
+var	y1 = d3.scale.linear().range([height, 0]);
+
+// Define the axes
+var	xAxis = d3.svg.axis().scale(x1)
+	.orient("bottom").ticks(24);
+
+var	yAxis = d3.svg.axis().scale(y1)
+	.orient("left").ticks(10);
+
+// Define the line
+var	valueline = d3.svg.line()
+	.x(function(d) { return x1(d.hour); })
+	.y(function(d) { return y1(d.length); });
+    
+// Adds the svg canvas
+var	svg = d3.select("body")
+	.append("svg")
+		.attr("width", width1 + margin.left + margin.right)
+		.attr("height", height1 + margin.top + margin.bottom)
+	.append("g")
+		.attr("transform", "translate(" + 320 + "," + 320 + ")");
+var outlineArc = d3.svg.arc()
+        .innerRadius(40)
+        .outerRadius(165);   
+var arc = d3.svg.arc()
+    .innerRadius(20)
+    .outerRadius(function (d) { 
+      //console.log(d.data.weight)
+    return (radius - 20) * (d.data.weight / 38.0); 
+  });
+;
+
+var outerPath = svg.selectAll(".outlineArc")
+      .data(pieOuter(data))
+    .enter().append("path")
+      .attr("fill", "none")
+      .attr("stroke", "gray")
+      .attr("class", "outlineArc")
+      .attr("d", outlineArc);  
+
+svg.append("g").attr("class", "labels");
+
+var arcs;
+d3.csv("Daily.csv",function(error,data){
+    
+    
+    data.forEach(function(d){
+        
+         dataArray=data;
+    });
+        
+}) 
+d3.csv("Hourly1.csv",function(error,data){
+    
+    
+    data.forEach(function(d){
+        
+         hourlyArray=data;
+    });
+        
+}) 
+// Get the data
+d3.csv("Weekly.csv", function(error, data) {
+   
+  
+ svg.append("g").append("path")
+      .datum(data)
+      .attr("d", area(data))
+      .style('stroke', 'black')
+      .style('stroke-width', 1)
+      .attr("fill","black");
+     d3.csv('AsterData.csv', function(error, data) {
+
+  data.forEach(function(d) {
+    d.weight = d.score;
+    d.width  = 10;
+    d.label=d.label;
+  
+  });
+ 
+  
+       
+   this.arcs=svg.selectAll(".arc").data(pie(data))
+      .enter()
+      .append("g")
+      .attr("class", "arc")
+      .append("path")
+      .attr("fill","#66FF99")
+      .style('stroke', 'black')
+      .style('stroke-width', 1)
+      .attr("d", arc)
+      .attr("opacity",.4)
+      .on("mousedown", mouseDown);
+
+     }) ;
+     });
+     
+var mouseDown = function () {
+    //  console.log('mouseup');
+      
+         var point = d3.mouse(arcs.node());
+         startAngle= (Math.atan2(point[1], point[0]) + Math.PI / 2);   
+          if(startAngle<0){
+      startAngle= (Math.atan2(point[1], point[0]) + Math.PI / 2)+Math.PI*2; 
+      }
+         d3.select(window)
+        .on('mousemove', mouseMove)
+        .on('mouseup', mouseUp);
+        
+         
+    };
+  
+var text=svg.selectAll(".labels").selectAll("text").data(pieOuter(data)).enter();
+
+	    text.append("text")
+		.attr({
+    x: function (d, i) {
+        
+        centroid = outlineArc.centroid(d);
+        
+        midAngle = Math.atan2(centroid[1], centroid[0]);
+        x = Math.cos(midAngle) * 100;
+        sign = (x > 0) ? 1 : -1;
+        labelX = (x + (5 * sign))*1.7;
+        return labelX;
+    },
+    y: function (d, i) {
+        centroid = outlineArc.centroid(d);
+        midAngle = Math.atan2(centroid[1], centroid[0]);
+        y = (Math.sin(midAngle) * 100)*1.7;
+        return y;
+    },
+        'text-anchor': function (d, i) {
+        centroid = outlineArc.centroid(d);
+        midAngle = Math.atan2(centroid[1], centroid[0]);
+        x = Math.cos(midAngle) * 100;
+        return (x > 0) ? "start" : "end";
+    },
+        'class': 'label-text'
+}).text(function (d) {
+    //console.log(d.data.label);
+    return d.data.label;
+});
+
+
+
+
+/*-----setting up variables for angle calculation and drawing arc based on selection-----*/
+var startAngle;
+var endAngle;
+var startAngle1;
+var endAngle1;
+var Month= d3.svg.arc()
+                .innerRadius(150)
+                .outerRadius(240)
+                .startAngle(0)
+                .endAngle(0);
+    
+   
+    //.attr("fill", function(d, i) { return "url(#grad" + i + ")"; });
+    
+    var isMouseDown = false;
+    
+   
+             
+ //var enteringLabels = d3.svg.selectAll();
+          
+              
+  var mouseUp = function () {
+    //  console.log('mouseup');
+      d3.select(window)
+        .on('mousemove', null)
+        .on('mouseup', null);
+      currentSelected = null;
+       drawArea();
+       drawArc();
+    };
+   var mouseMove = function () {
+   //   console.log('mouseup');
+      
+      currentSelected = null;
+      var point = d3.mouse(arcs.node());
+      endAngle= (Math.atan2(point[1], point[0]) + Math.PI / 2);  
+      if(endAngle<0){
+          
+      endAngle= (Math.atan2(point[1], point[0]) + Math.PI / 2)+Math.PI*2; 
+      }
+      //console.log("endAngle") ;
+       // console.log(endAngle);
+          drawSelection();  
+    }; 
+   
+    
+ function drawSelection(){
+     
+     var arcpath= d3.svg.arc()
+                .innerRadius(20)
+                .outerRadius(140)
+                .startAngle(0)
+                .endAngle(0);
+       
+     arcSelection=svg.append("path")
+    .attr("fill","#9AFE2E")
+    .attr("d", arcpath)
+    .attr("opacity",.02);
+    
+    var arcS= d3.svg.arc()
+                .innerRadius(20)
+                .outerRadius(140)
+                .startAngle(startAngle)
+                .endAngle(endAngle);
+         
+        
+           arcSelection.attr("d",arcS);  
+ }
+ function drawArc(){
+     
+     var arcMonth=svg.append("path")
+    .attr("d", Month)
+    .attr("fill","#66FF99")
+    .attr("opacity",.5)
+    .on("mousedown", drawLine1);
+     
+     var arcM= d3.svg.arc()
+                .innerRadius(200)
+                .outerRadius(280)
+                .startAngle(startAngle)
+                .endAngle(endAngle);
+        arcMonth.attr("d",arcM);
+    
+ }
+ 
+function drawArea(){
+     
+     
+     var filtered=dataArray.filter(isBigEnough);
+     
+     //console.log(filtered);
+   filtered.forEach(function(d){
+       d['length']= +d['length'];
+     //console.log(d.length);
+       
+   });
+     svg.append("g").append("path")
+      .datum(filtered)
+      .attr("d", area1(filtered))
+      .attr("fill","black")
+    .style('stroke', 'white')
+    .style('stroke-width', 1);;
+    
+     //console.log(startAngle);
+     //console.log(endAngle); 
+    // drawLine();
+ }
+
+function isBigEnough(element) {
+   
+  return element.angle >= startAngle && element.angle <= endAngle;
+}
+function drawLine(){
+    var x = d3.time.scale()
+    .range([0, width]);
+
+    var y = d3.scale.linear()
+    .range([height, 0]);
+    var line = d3.svg.line()
+    .x(function(d) { return x(d.date); })
+    .y(function(d) { return y(d.close); });
+    
+    var filteredHourly=hourlyArray.filter(isBigEnough);
+    filteredHourly.forEach(function(d){
+       d['length']= +d['length'];
+       d['hour']=+d['hour'];
+     //console.log(d);
+       
+   });
+   //console.log(d.length);
+     var data = d3.nest()
+  .key(function(d) { return d.hour;})
+  .rollup(function(d) { 
+   return d3.sum(d, function(g) {return g.length; });
+  }).entries(filteredHourly);
+    
+    data.sort(function(a,b){return d3.ascending(+(a["key"]),+(b["key"]));});
+    
+    data.forEach(function(d){
+       
+      //  console.log(d.key);
+       // console.log(d.values);
+        d.hour=d.key;
+        d.length=d.values;
+    });
+    
+// Adds the svg canvas
+var	chart2 = d3.select("body")
+	.append("svg")
+		.attr("width", width + margin.left + margin.right)
+		.attr("height", height + margin.top + margin.bottom)
+                .attr("transform", "translate(" + 600 + "," + 0 + ")")
+	.append("g")
+		.attr("transform", "translate(" + margin.left + "," + margin.top + ")");
+		
+// Get the data
+
+
+	// Scale the range of the data
+	
+	y1.domain([0, d3.max(data, function(d) { return d.length; })]);
+
+	// Add the valueline path.
+	chart2.append("path")
+		.attr("class", "line")
+		.attr("d", valueline(data));
+
+	// Add the X Axis
+	chart2.append("g")
+		.attr("class", "x axis")
+		.attr("transform", "translate(0," + height + ")")
+		.call(xAxis);
+
+	// Add the Y Axis
+	chart2.append("g")
+		.attr("class", "y axis")
+		.call(yAxis);
+
+
+}
+
+var drawLine1 = function () {
+    //  console.log('mouseup');
+      
+         var point = d3.mouse(arcs.node());
+         startAngle= (Math.atan2(point[1], point[0]) + Math.PI / 2);   
+          if(startAngle<0){
+      startAngle= (Math.atan2(point[1], point[0]) + Math.PI / 2)+Math.PI*2; 
+      }
+         d3.select(window)
+        .on('mousemove', drawLineSelection)
+        .on('mouseup', mouseUp1);
+        
+         
+    };
+    
+ var drawLineSelection = function () {
+   //   console.log('mouseup');
+      
+      currentSelected = null;
+      var point = d3.mouse(arcs.node());
+      endAngle= (Math.atan2(point[1], point[0]) + Math.PI / 2);  
+      if(endAngle<0){
+          
+      endAngle= (Math.atan2(point[1], point[0]) + Math.PI / 2)+Math.PI*2; 
+      }
+      //console.log("endAngle") ;
+       // console.log(endAngle);
+          drawSelectionForLine();  
+    }; 
+var mouseUp1 = function () {
+    //  console.log('mouseup');
+      d3.select(window)
+        .on('mousemove', null)
+        .on('mouseup', null);
+      currentSelected = null;
+      drawLine();
+    };
+   
+function drawSelectionForLine(){
+        var arcpath= d3.svg.arc()
+                .innerRadius(200)
+                .outerRadius(275)
+                .startAngle(0)
+                .endAngle(0);
+       
+     arcSelection=svg.append("path")
+    .attr("fill","#9AFE2E")
+    .attr("d", arcpath)
+    .attr("opacity",.05);
+    
+    var arcS= d3.svg.arc()
+                .innerRadius(200)
+                .outerRadius(275)
+                .startAngle(startAngle)
+                .endAngle(endAngle);
+         
+        
+           arcSelection.attr("d",arcS); 
+}
+</script>
+</body>
